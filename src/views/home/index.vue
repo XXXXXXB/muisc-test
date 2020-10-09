@@ -38,6 +38,8 @@
 import { getUserChannels } from '@/api/user'
 import articlList from '@/components/article-list'
 import channelEdit from '@/components/channel-edit'
+import { mapState } from 'vuex'
+import { getItem } from '@/utils/storage'
 export default {
   name: 'homeIndex',
   components: {
@@ -56,12 +58,29 @@ export default {
   },
   methods: {
     async loadChannels () {
-      const { data } = await getUserChannels()
-      this.channels = data.data.channels
+      let channels = []
+      if (this.user) {
+        const { data } = await getUserChannels()
+        channels = data.data.channels
+      } else {
+        const localChannels = getItem('user-channels')
+        if (localChannels) {
+          channels = localChannels
+        } else {
+          const { data } = await getUserChannels()
+          channels = data.data.channels
+        }
+      }
+      // const { data } = await getUserChannels()
+      // this.channels = data.data.channels
+      this.channels = channels
     },
     updateActive (index) {
       this.active = index
     }
+  },
+  computed: {
+    ...mapState(['user'])
   }
 }
 </script>

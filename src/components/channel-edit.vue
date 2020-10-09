@@ -18,7 +18,7 @@
         :text='channel.name'
         :icon='isEidtShow ? "clear" : ""'
         :class="{'active': active == index}"
-        @click="onEidtChannel(index)"
+        @click="onUserChannelClick(index, channel)"
       />
     </van-grid>
 
@@ -38,7 +38,9 @@
 </template>
 
 <script>
-import { getAllChannels } from '../api/channel'
+import { getAllChannels, addUserChannels, deleteUserChannels } from '../api/channel'
+import { mapState } from 'vuex'
+import { setItem } from '@/utils/storage'
 export default {
   name: 'channelEdit',
   data () {
@@ -61,6 +63,7 @@ export default {
     this.onloadAllChannel()
   },
   computed: {
+    ...mapState(['user']),
     recommendChannel () {
       return this.allChannels.filter(channel => {
         return !this.userChannels.find(userChannel => {
@@ -74,8 +77,38 @@ export default {
       const { data } = await getAllChannels()
       this.allChannels = data.data.channels
     },
-    onAdd (channel) {
+    async onAdd (channel) {
       this.userChannels.push(channel)
+      if (this.user) {
+        await addUserChannels({
+          channels: [
+            {
+              id: channel.id,
+              seq: this.userChannels.length
+            }
+          ]
+        })
+      } else {
+        setItem('user-channels', this.userChannels)
+      }
+    },
+    onUserChannelClick (index, channel) {
+      if (this.isEidtShow && index !== 0) {
+        this.deleteChannels(index, channel)
+      } else {
+        this.onEidtChannel(index)
+      }
+    },
+    async deleteChannels (index, channel) {
+      if (index <= this.active) {
+        this.$emit('updateActive', index)
+      }
+      this.userChannels.splice(index, 1)
+      if (this.user) {
+        await deleteUserChannels(channel.id)
+      } else {
+        setItem('user-channels', this.userChannels)
+      }
     },
     onEidtChannel (index) {
       if (!this.isEidtShow) {

@@ -59,8 +59,5 @@ export default {
         padding-left: 0;
       }
     }
-    /deep/ .van-tabs__line{
-      background-color: #3296FA;
-    }
   }
 </style>
