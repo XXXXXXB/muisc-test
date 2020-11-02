@@ -11,7 +11,7 @@
         finished-text="没有更多了"
         @load="onLoad"
       >
-        <articlListItem v-for="item in articlesList" :key="item.art_id" :article="item" />
+        <articlListItem v-for="(item) in articlesList" :key="item.art_id.toString()" :article="item" />
       </van-list>
     </van-pull-refresh>
   </div>
@@ -54,10 +54,8 @@ export default {
       this.articlesList.push(...results)
       this.loading = false
       if (results.length) {
-        console.log(11)
         this.timestamp = data.data.timestamp
       } else {
-        console.log(22)
         this.finished = true
       }
     },
